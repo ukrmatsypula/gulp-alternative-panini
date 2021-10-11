@@ -11,7 +11,7 @@ let path = {
   },
 
   src: {
-    html: sourceFolder + "/",
+    html: sourceFolder + "/*.html",
     css: sourceFolder + "/scss/style.scss",
     js: sourceFolder + "/js/app.js",
     img: sourceFolder + "/img/**/*.{jpg,jpeg,png,svg,gif,ico,webp}",
@@ -42,11 +42,17 @@ function browserSync(params) {
   });
 }
 
+function html() {
+  return src(path.src.html)
+    .pipe(dest(path.build.html))
+    .pipe(browsersync.stream());
+}
+
+let build = gulp.series(html);
+let watch = gulp.parallel(build, browserSync);
 
 
-
-
-let watch = gulp.parallel(browserSync);
-
+exports.html = html;
+exports.build = build;
 exports.watch = watch;
 exports.default = watch;
