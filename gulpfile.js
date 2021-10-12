@@ -96,6 +96,12 @@ function js() {
     .pipe(browsersync.stream());
 }
 
+function images() {
+  return src(path.src.img)
+    .pipe(dest(path.build.img))
+    .pipe(browsersync.stream());
+}
+
 function watchFiles() {
   gulp.watch([path.watch.html], html);
   gulp.watch([path.watch.css], css);
