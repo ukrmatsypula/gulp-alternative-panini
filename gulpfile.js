@@ -38,7 +38,8 @@ let { src, dest } = require("gulp"),
   group_media = require("gulp-group-css-media-queries"),
   clean_css = require("gulp-clean-css"),
   rename = require("gulp-rename"),
-  uglify = require("gulp-uglify-es").default;
+  uglify = require("gulp-uglify-es").default,
+imagemin = require("gulp-imagemin");
 
 function browserSync(params) {
   browsersync.init({
@@ -97,27 +98,39 @@ function js() {
 }
 
 function images() {
-  return src(path.src.img)
-    .pipe(dest(path.build.img))
-    .pipe(browsersync.stream());
+  return (
+    src(path.src.img)
+      .pipe(
+        imagemin({
+          progresive: true,
+          svgoPlugins: [{ removeViewBox: false }],
+          interlaced: true,
+          optimizationlevel: 3,
+        })
+      )
+      .pipe(dest(path.build.img))
+      .pipe(browsersync.stream())
+  );
 }
 
 function watchFiles() {
   gulp.watch([path.watch.html], html);
   gulp.watch([path.watch.css], css);
   gulp.watch([path.watch.js], js);
+  gulp.watch([path.watch.img], images);
 }
 
 function clean() {
   return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(html, css, js));
+let build = gulp.series(clean, gulp.parallel(html, css, js, images));
 let watch = gulp.parallel(build, watchFiles, browserSync);
 
 exports.html = html;
 exports.css = css;
 exports.js = js;
+exports.images = images;
 exports.build = build;
 exports.watch = watch;
 exports.default = watch;
