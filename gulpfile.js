@@ -8,21 +8,24 @@ let path = {
     js: projectFolder + "/js/",
     img: projectFolder + "/img/",
     fonts: projectFolder + "/fonts/",
+    svg: projectFolder + "/img/",
   },
 
   src: {
     html: [sourceFolder + "/*.html", "!" + sourceFolder + "/_*.html"],
     css: sourceFolder + "/scss/style.scss",
     js: sourceFolder + "/js/app.js",
-    img: sourceFolder + "/img/**/*.{jpg,jpeg,png,svg,gif,ico,webp}",
+    img: sourceFolder + "/img/**/*.{jpg,jpeg,png,gif,ico,webp}",
     fonts: sourceFolder + "/fonts/*.ttf",
+    svg: sourceFolder + "/img/iconsprite/*.svg",
   },
 
   watch: {
     html: sourceFolder + "/**/*.html",
     css: sourceFolder + "/scss/**/*.scss",
     js: sourceFolder + "/js/**/*.js",
-    img: sourceFolder + "/img/**/*.{jpg,jpeg,png,svg,gif,ico,webp}",
+    img: sourceFolder + "/img/**/*.{jpg,jpeg,png,gif,ico,webp}",
+    svg: sourceFolder + "/img/iconsprite/*.svg",
   },
 
   clean: "./" + projectFolder + "/",
@@ -41,7 +44,8 @@ let { src, dest } = require("gulp"),
   uglify = require("gulp-uglify-es").default,
   imagemin = require("gulp-imagemin"),
   webp = require("gulp-webp"),
-  webphtml = require("gulp-webp-html");
+  webphtml = require("gulp-webp-html"),
+  svgSprite = require("gulp-svg-sprite");
 
 function browserSync(params) {
   browsersync.init({
@@ -121,24 +125,42 @@ function images() {
     .pipe(browsersync.stream());
 }
 
+function svg() {
+  return gulp
+    .src([path.src.svg])
+    .pipe(
+      svgSprite({
+        mode: {
+          stack: {
+            sprite: "../icons/icons.svg",
+            example: true, // demo preview stack/sprite.html
+          },
+        },
+      })
+    )
+    .pipe(dest(path.build.svg));
+}
+
 function watchFiles() {
   gulp.watch([path.watch.html], html);
   gulp.watch([path.watch.css], css);
   gulp.watch([path.watch.js], js);
   gulp.watch([path.watch.img], images);
+  gulp.watch([path.watch.svg], svg);
 }
 
 function clean() {
   return del(path.clean);
 }
 
-let build = gulp.series(clean, gulp.parallel(html, css, js, images));
+let build = gulp.series(clean, gulp.parallel(html, css, js, images, svg));
 let watch = gulp.parallel(build, watchFiles, browserSync);
 
 exports.html = html;
 exports.css = css;
 exports.js = js;
 exports.images = images;
+exports.svg = svg;
 exports.build = build;
 exports.watch = watch;
 exports.default = watch;
